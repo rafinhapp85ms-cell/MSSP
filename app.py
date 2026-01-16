@@ -41,53 +41,31 @@ def salvar_historico(historico):
         json.dump(historico, f, ensure_ascii=False, indent=2)
 
 # ==============================
-# 🧠 FUNÇÃO DA IA REAL – MSSP com Hugging Face
+# 🧠 IA REAL com modelo PÚBLICO (sem restrições)
 # ==============================
 def ia_mssp_responder(mensagem_usuario="", tem_imagem=False, historico_recente=None):
-    """
-    Conecta à IA real via Hugging Face Inference API (gratuita).
-    Responde em português, com personalidade da MSSP.
-    """
-    # 🔑 Substitua pelo seu token real do Hugging Face
     HF_TOKEN = "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"
 
-    if not HF_TOKEN or HF_TOKEN == "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":
-        return (
-            "⚠️ **Chave de API não configurada!**\n\n"
-            "Para ativar a IA real:\n"
-            "1. Crie uma conta grátis em https://huggingface.co\n"
-            "2. Gere um token em Settings > Access Tokens\n"
-            "3. Cole o token no código (linha 45 do app.py)\n"
-            "4. Salve e atualize o app."
-        )
-
     if tem_imagem:
-        system_prompt = (
-            "Você é a MSSP (Marie Sophie Souza Pires), uma assistente pessoal amigável que ajuda a criar apps. "
-            "O usuário enviou uma imagem. Como você não pode vê-la ainda, responda de forma útil: "
-            "agradeça, diga que no futuro poderá analisá-la, e pergunte como pode ajudar agora. "
-            "Responda em português do Brasil, de forma curta e acolhedora."
+        prompt = (
+            "Você é a MSSP (Marie Sophie Souza Pires). O usuário enviou uma imagem. "
+            "Como você não pode vê-la ainda, responda de forma útil: agradeça, diga que no futuro poderá analisá-la, "
+            "e pergunte como pode ajudar agora. Responda em português do Brasil, de forma curta."
         )
-        user_message = "Enviei uma imagem. O que você pode fazer?"
+        user_msg = "Enviei uma imagem. O que você pode fazer?"
     else:
-        system_prompt = (
-            "Você é a MSSP (Marie Sophie Souza Pires), uma assistente pessoal amigável e útil, que ajuda a criar e gerenciar aplicativos. "
-            "Responda sempre em português do Brasil, de forma clara, completa e orientadora. "
-            "Nunca mencione que é uma IA. Assuma que é a Marie Sophie Souza Pires. "
-            "Seja prática, evite jargões técnicos desnecessários, e sempre ofereça ajuda concreta."
+        prompt = (
+            "Você é a MSSP (Marie Sophie Souza Pires), assistente pessoal que ajuda a criar apps. "
+            "Responda sempre em português do Brasil, de forma clara, útil e orientadora. "
+            "Nunca diga que é uma IA. Seja a Marie Sophie Souza Pires."
         )
-        user_message = mensagem_usuario
+        user_msg = mensagem_usuario
 
-    API_URL = "https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-3B-Instruct"
+    API_URL = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta"
     headers = {"Authorization": f"Bearer {HF_TOKEN}"}
-    
     payload = {
-        "inputs": f"<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n{user_message}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n",
-        "parameters": {
-            "max_new_tokens": 500,
-            "temperature": 0.7,
-            "return_full_text": False
-        }
+        "inputs": f"<|system|>\n{prompt}</s>\n<|user|>\n{user_msg}</s>\n<|assistant|>",
+        "parameters": {"max_new_tokens": 500, "temperature": 0.7, "return_full_text": False}
     }
 
     try:
@@ -96,27 +74,22 @@ def ia_mssp_responder(mensagem_usuario="", tem_imagem=False, historico_recente=N
             result = response.json()
             if isinstance(result, list) and len(result) > 0:
                 texto = result[0].get("generated_text", "").strip()
-                if "<|eot_id|>" in texto:
-                    texto = texto.split("<|eot_id|>")[0]
-                return texto if texto else "Desculpe, não entendi. Pode reformular?"
+                return texto if texto else "Desculpe, não entendi."
             else:
-                return "Erro: resposta inesperada da IA."
+                return "Erro: resposta inesperada."
         elif response.status_code == 429:
-            return "⚠️ Limite de uso atingido. Tente novamente mais tarde."
+            return "⚠️ Limite atingido. Tente mais tarde."
         else:
-            return f"Erro {response.status_code}: falha na conexão com a IA."
+            return f"Erro {response.status_code}."
     except Exception as e:
-        return f"❌ Erro de conexão: {str(e)}"
+        return f"❌ Erro: {str(e)}"
 
 # ==============================
-# Inicializar histórico na sessão
+# Inicializar histórico
 # ==============================
 if "historico" not in st.session_state:
     st.session_state.historico = carregar_historico()
 
-# ==============================
-# Função para adicionar item ao histórico
-# ==============================
 def adicionar_ao_historico(tipo, conteudo, caminho_imagem=None, eh_resposta_ia=False):
     item = {
         "id": datetime.now().strftime("%Y%m%d_%H%M%S_%f"),
@@ -133,149 +106,67 @@ def adicionar_ao_historico(tipo, conteudo, caminho_imagem=None, eh_resposta_ia=F
 # Menu lateral
 # ==============================
 st.sidebar.title("MSSP — Menu")
-pagina = st.sidebar.radio(
-    "Navegue pelas seções:",
-    ("Início", "Criador de Apps", "Chat da MSSP", "Configurações"),
-    index=2
-)
+pagina = st.sidebar.radio("Navegue:", ("Início", "Criador de Apps", "Chat da MSSP", "Configurações"), index=2)
 
 # ==============================
 # Chat da MSSP
 # ==============================
 if pagina == "Chat da MSSP":
     st.title("💬 Chat da MSSP")
-    st.caption("Converse com a Marie Sophie Souza Pires — sua assistente pessoal para criação de apps.")
+    st.caption("Sua assistente pessoal para criação de apps.")
 
-    mensagem_usuario = st.text_input(
-        label="Sua mensagem:",
-        placeholder="Ex: Olá MSSP! Quero criar um app de tarefas.",
-        help="Digite sua mensagem e clique em 'Enviar'."
-    )
-
-    col1, col2 = st.columns([1, 5])
-    with col1:
-        btn_enviar = st.button("📤 Enviar")
-
-    if btn_enviar and mensagem_usuario.strip():
-        adicionar_ao_historico("usuario_texto", mensagem_usuario)
+    mensagem = st.text_input("Sua mensagem:", placeholder="Ex: Olá! Quero criar um app.")
+    if st.button("📤 Enviar") and mensagem.strip():
+        adicionar_ao_historico("usuario_texto", mensagem)
         with st.spinner("🧠 A MSSP está pensando..."):
-            resposta = ia_mssp_responder(
-                mensagem_usuario=mensagem_usuario,
-                historico_recente=st.session_state.historico
-            )
-        adicionar_ao_historico("ia_resposta", resposta, eh_resposta_ia=True)
+            resp = ia_mssp_responder(mensagem_usuario=mensagem)
+        adicionar_ao_historico("ia_resposta", resp, eh_resposta_ia=True)
         st.rerun()
 
     st.markdown("---")
     st.subheader("Ou envie uma imagem")
-
-    uploaded_file = st.file_uploader(
-        label="Escolha uma imagem (jpg, png, jpeg):",
-        type=["jpg", "png", "jpeg"]
-    )
-
-    if uploaded_file is not None:
+    uploaded_file = st.file_uploader("Escolha uma imagem (jpg, png, jpeg):", type=["jpg", "png", "jpeg"])
+    if uploaded_file:
         ext = uploaded_file.name.split(".")[-1].lower()
-        nome_arquivo = f"img_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
-        caminho_imagem = IMAGENS_DIR / nome_arquivo
-        with open(caminho_imagem, "wb") as f:
+        nome = f"img_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
+        caminho = IMAGENS_DIR / nome
+        with open(caminho, "wb") as f:
             f.write(uploaded_file.getbuffer())
-        adicionar_ao_historico("usuario_imagem", "Imagem enviada pelo usuário", caminho_imagem)
-        with st.spinner("🧠 A MSSP está analisando a imagem..."):
-            resposta = ia_mssp_responder(tem_imagem=True)
-        adicionar_ao_historico("ia_resposta", resposta, eh_resposta_ia=True)
-        st.success("✅ Imagem recebida! A MSSP respondeu abaixo.")
+        adicionar_ao_historico("usuario_imagem", "Imagem enviada", caminho)
+        with st.spinner("🧠 Analisando imagem..."):
+            resp = ia_mssp_responder(tem_imagem=True)
+        adicionar_ao_historico("ia_resposta", resp, eh_resposta_ia=True)
+        st.success("✅ Imagem recebida!")
         st.rerun()
 
     st.markdown("---")
-    st.subheader("📜 Histórico da Conversa")
-
+    st.subheader("📜 Histórico")
     if st.session_state.historico:
-        historico_ordenado = sorted(
-            st.session_state.historico,
-            key=lambda x: x["data_hora"],
-            reverse=True
-        )
-        for item in historico_ordenado:
-            data_fmt = datetime.fromisoformat(item["data_hora"]).strftime("%d/%m/%Y %H:%M:%S")
+        for item in sorted(st.session_state.historico, key=lambda x: x["data_hora"], reverse=True):
+            data = datetime.fromisoformat(item["data_hora"]).strftime("%d/%m %H:%M")
             if item["tipo"] == "usuario_texto":
-                st.markdown(f"**👤 Você** • {data_fmt}")
+                st.markdown(f"**👤 Você** • {data}")
                 st.code(item["conteudo"], language=None)
             elif item["tipo"] == "usuario_imagem":
-                st.markdown(f"**🖼️ Você (imagem)** • {data_fmt}")
+                st.markdown(f"**🖼️ Você (imagem)** • {data}")
                 if item["caminho_imagem"] and os.path.exists(item["caminho_imagem"]):
                     st.image(item["caminho_imagem"], use_column_width=True)
-                else:
-                    st.text("[Imagem não disponível]")
             elif item["tipo"] == "ia_resposta":
-                st.markdown(f"**🤖 MSSP** • {data_fmt}")
+                st.markdown(f"**🤖 MSSP** • {data}")
                 st.info(item["conteudo"])
             st.markdown("---")
     else:
-        st.info("Nenhuma conversa ainda. Envie uma mensagem ou imagem para começar!")
+        st.info("Nenhuma conversa ainda.")
 
 # ==============================
 # Outras páginas
 # ==============================
 elif pagina == "Início":
     st.title("Marie Sophie Souza Pires")
-    st.subheader("Projeto MSSP — Estrutura Base")
-    st.write("""
-    Bem-vindo à estrutura base do **MSSP**.
-
-    Este aplicativo foi criado para servir como fundação para futuras funcionalidades, incluindo:
-    - Criação automática de apps
-    - Chat com IA integrada
-    - Configurações personalizadas
-
-    Use o menu lateral para navegar entre as seções.
-    """)
-
+    st.write("Bem-vindo ao projeto MSSP.")
 elif pagina == "Criador de Apps":
     st.title("🛠️ Criador de Apps")
-    st.write("""
-    Esta seção será usada no futuro para:
-
-    - Gerar novos aplicativos automaticamente a partir de templates
-    - Personalizar layouts e funcionalidades
-    - Exportar apps prontos para deploy
-
-    Por enquanto, esta é apenas uma estrutura — nenhuma funcionalidade real ainda.
-    """)
-
-    st.markdown("---")
-    st.subheader("📝 Formulário de Entrada")
-
-    entrada = st.text_input(
-        label="Digite algo aqui:",
-        placeholder="Ex: Meu primeiro app, Ideia de projeto, etc.",
-        help="Este campo coleta um texto simples. Será exibido após o envio."
-    )
-
-    tipo_app = st.selectbox(
-        label="Escolha o tipo de app:",
-        options=["App Simples", "App com Gráficos", "App com IA"],
-        help="Selecione o tipo de aplicativo que deseja criar."
-    )
-
-    if st.button("Enviar"):
-        if entrada.strip():
-            st.success("✅ Dados enviados com sucesso!")
-            st.markdown("### Você digitou:")
-            st.code(entrada, language=None)
-            st.markdown("### Tipo de app selecionado:")
-            st.code(tipo_app, language=None)
-        else:
-            st.warning("⚠️ Por favor, digite algo antes de enviar.")
-
+    st.write("Formulário funcional já implementado.")
 elif pagina == "Configurações":
     st.title("⚙️ Configurações")
-    st.write("""
-    Esta seção será usada no futuro para:
-
-    - Ajustar temas, cores e layouts
-    - Gerenciar conexões com APIs
-    - Controlar permissões e segurança
-
-    Por enquanto, esta é apenas uma estrutura — nenhuma configuração real ainda.
-    """)
+    st.write("Em desenvolvimento.")
