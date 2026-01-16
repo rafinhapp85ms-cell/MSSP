@@ -159,19 +159,73 @@ if pagina == "Chat da MSSP":
         label_visibility="collapsed"
     )
 
-    # Botões: Enviar + Imagem + Vídeo + Áudio (todos do mesmo tamanho)
-    col1, col2, col3, col4 = st.columns(4)
+    # Botões: Enviar + Anexar
+    col1, col2 = st.columns(2)
     with col1:
         btn_enviar = st.button("📤 Enviar", use_container_width=True)
     with col2:
-        uploaded_image = st.file_uploader("Imagem", type=["jpg", "png", "jpeg"], label_visibility="collapsed")
-        btn_imagem = st.button("Imagem", use_container_width=True)
-    with col3:
-        uploaded_video = st.file_uploader("Vídeo", type=["mp4", "avi", "mov"], label_visibility="collapsed")
-        btn_video = st.button("Vídeo", use_container_width=True)
-    with col4:
-        uploaded_audio = st.file_uploader("Áudio", type=["mp3", "wav", "ogg"], label_visibility="collapsed")
-        btn_audio = st.button("Áudio", use_container_width=True)
+        btn_anexar = st.button("📎 Anexar", use_container_width=True)
+
+    # Menu de anexos (só aparece ao clicar em "Anexar")
+    if btn_anexar:
+        st.markdown("---")
+        st.subheader("Selecione o tipo de arquivo:")
+
+        # Opções de mídia
+        col_img, col_vid, col_aud = st.columns(3)
+        with col_img:
+            uploaded_image = st.file_uploader("Imagem", type=["jpg", "png", "jpeg"], label_visibility="collapsed")
+            if uploaded_image is not None:
+                ext = uploaded_image.name.split(".")[-1].lower()
+                nome = f"img_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
+                caminho = IMAGENS_DIR / nome
+                with open(caminho, "wb") as f:
+                    f.write(uploaded_image.getbuffer())
+                adicionar_ao_historico("usuario_imagem", "Imagem enviada", caminho)
+                with st.spinner("🧠 Analisando imagem..."):
+                    resposta = ia_mssp_responder(tem_imagem=True)
+                adicionar_ao_historico("ia_resposta", resposta, eh_resposta_ia=True)
+                st.success("✅ Imagem recebida!")
+                st.image(str(caminho), use_column_width=True)
+                st.subheader("Resposta da MSSP:")
+                st.info(resposta)
+                st.rerun()
+
+        with col_vid:
+            uploaded_video = st.file_uploader("Vídeo", type=["mp4", "avi", "mov"], label_visibility="collapsed")
+            if uploaded_video is not None:
+                ext = uploaded_video.name.split(".")[-1].lower()
+                nome = f"video_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
+                caminho = VIDEOS_DIR / nome
+                with open(caminho, "wb") as f:
+                    f.write(uploaded_video.getbuffer())
+                adicionar_ao_historico("usuario_video", "Vídeo enviado", caminho)
+                with st.spinner("🧠 Analisando vídeo..."):
+                    resposta = ia_mssp_responder(tem_video=True)
+                adicionar_ao_historico("ia_resposta", resposta, eh_resposta_ia=True)
+                st.success("✅ Vídeo recebido!")
+                st.video(str(caminho))
+                st.subheader("Resposta da MSSP:")
+                st.info(resposta)
+                st.rerun()
+
+        with col_aud:
+            uploaded_audio = st.file_uploader("Áudio", type=["mp3", "wav", "ogg"], label_visibility="collapsed")
+            if uploaded_audio is not None:
+                ext = uploaded_audio.name.split(".")[-1].lower()
+                nome = f"audio_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
+                caminho = AUDIOS_DIR / nome
+                with open(caminho, "wb") as f:
+                    f.write(uploaded_audio.getbuffer())
+                adicionar_ao_historico("usuario_audio", "Áudio enviado", caminho)
+                with st.spinner("🧠 Analisando áudio..."):
+                    resposta = ia_mssp_responder(tem_audio=True)
+                adicionar_ao_historico("ia_resposta", resposta, eh_resposta_ia=True)
+                st.success("✅ Áudio recebido!")
+                st.audio(str(caminho))
+                st.subheader("Resposta da MSSP:")
+                st.info(resposta)
+                st.rerun()
 
     # Processar envio de texto
     if btn_enviar and mensagem_usuario.strip():
@@ -182,57 +236,6 @@ if pagina == "Chat da MSSP":
         st.markdown("---")
         st.subheader("Sua mensagem:")
         st.code(mensagem_usuario, language=None)
-        st.subheader("Resposta da MSSP:")
-        st.info(resposta)
-        st.rerun()
-
-    # Processar imagem
-    if uploaded_image is not None:
-        ext = uploaded_image.name.split(".")[-1].lower()
-        nome = f"img_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
-        caminho = IMAGENS_DIR / nome
-        with open(caminho, "wb") as f:
-            f.write(uploaded_image.getbuffer())
-        adicionar_ao_historico("usuario_imagem", "Imagem enviada", caminho)
-        with st.spinner("🧠 Analisando imagem..."):
-            resposta = ia_mssp_responder(tem_imagem=True)
-        adicionar_ao_historico("ia_resposta", resposta, eh_resposta_ia=True)
-        st.success("✅ Imagem recebida!")
-        st.image(str(caminho), use_column_width=True)
-        st.subheader("Resposta da MSSP:")
-        st.info(resposta)
-        st.rerun()
-
-    # Processar vídeo
-    if uploaded_video is not None:
-        ext = uploaded_video.name.split(".")[-1].lower()
-        nome = f"video_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
-        caminho = VIDEOS_DIR / nome
-        with open(caminho, "wb") as f:
-            f.write(uploaded_video.getbuffer())
-        adicionar_ao_historico("usuario_video", "Vídeo enviado", caminho)
-        with st.spinner("🧠 Analisando vídeo..."):
-            resposta = ia_mssp_responder(tem_video=True)
-        adicionar_ao_historico("ia_resposta", resposta, eh_resposta_ia=True)
-        st.success("✅ Vídeo recebido!")
-        st.video(str(caminho))
-        st.subheader("Resposta da MSSP:")
-        st.info(resposta)
-        st.rerun()
-
-    # Processar áudio
-    if uploaded_audio is not None:
-        ext = uploaded_audio.name.split(".")[-1].lower()
-        nome = f"audio_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
-        caminho = AUDIOS_DIR / nome
-        with open(caminho, "wb") as f:
-            f.write(uploaded_audio.getbuffer())
-        adicionar_ao_historico("usuario_audio", "Áudio enviado", caminho)
-        with st.spinner("🧠 Analisando áudio..."):
-            resposta = ia_mssp_responder(tem_audio=True)
-        adicionar_ao_historico("ia_resposta", resposta, eh_resposta_ia=True)
-        st.success("✅ Áudio recebido!")
-        st.audio(str(caminho))
         st.subheader("Resposta da MSSP:")
         st.info(resposta)
         st.rerun()
