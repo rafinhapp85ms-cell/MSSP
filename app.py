@@ -193,16 +193,26 @@ if pagina == "Chat da MSSP":
     st.title("💬 Chat da MSSP")
     st.caption("Converse com a Marie Sophie Souza Pires — sua assistente pessoal para criação de apps.")
 
-    # Campo de texto
-    mensagem_usuario = st.text_input(
-        label="Sua mensagem:",
-        placeholder="Ex: Olá MSSP! Quero criar um app de tarefas.",
-        help="Digite sua mensagem e clique em 'Enviar'."
-    )
+    # Campo de texto e botão de enviar
+    col1, col2, col3 = st.columns([4, 1, 1])
 
-    col1, col2 = st.columns([1, 5])
     with col1:
+        mensagem_usuario = st.text_input(
+            label="Sua mensagem:",
+            placeholder="Ex: Olá MSSP! Quero criar um app de tarefas.",
+            help="Digite sua mensagem e clique em 'Enviar'."
+        )
+
+    with col2:
         btn_enviar = st.button("📤 Enviar")
+
+    with col3:
+        # Botão para anexar imagem
+        uploaded_file = st.file_uploader(
+            "📎 Anexar",
+            type=["jpg", "png", "jpeg"],
+            label_visibility="collapsed"
+        )
 
     # Exibir resposta imediatamente abaixo da pergunta
     if btn_enviar and mensagem_usuario.strip():
@@ -226,15 +236,7 @@ if pagina == "Chat da MSSP":
         
         st.rerun()
 
-    # Upload de imagem
-    st.markdown("---")
-    st.subheader("Ou envie uma imagem")
-
-    uploaded_file = st.file_uploader(
-        label="Escolha uma imagem (jpg, png, jpeg):",
-        type=["jpg", "png", "jpeg"]
-    )
-
+    # Processar imagem anexada
     if uploaded_file is not None:
         ext = uploaded_file.name.split(".")[-1].lower()
         nome_arquivo = f"img_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
