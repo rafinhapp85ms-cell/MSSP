@@ -49,7 +49,8 @@ def ia_mssp_responder(mensagem_usuario="", tem_imagem=False, historico_recente=N
     Responde em português, com personalidade da MSSP.
     """
     # Substitua YOUR_HF_TOKEN pelo seu token real do Hugging Face
-    HF_TOKEN = "YOUR_HF_TOKEN"  # ← ALTERE ESTA LINHA!
+    HF_TOKEN = "HF_TOKEN = "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"
+"  # ← ALTERE ESTA LINHA!
 
     if not HF_TOKEN or HF_TOKEN == "YOUR_HF_TOKEN":
         return (
