@@ -51,6 +51,28 @@ elif pagina == "Criador de Apps":
     Por enquanto, esta é apenas uma estrutura — nenhuma funcionalidade real ainda.
     """)
 
+    # ==============================
+    # 🔧 FORMULÁRIO DE ENTRADA DE DADOS
+    # ==============================
+    st.markdown("---")  # Linha divisória
+    st.subheader("📝 Formulário de Entrada")
+
+    # Campo de texto
+    entrada = st.text_input(
+        label="Digite algo aqui:",
+        placeholder="Ex: Meu primeiro app, Ideia de projeto, etc.",
+        help="Este campo coleta um texto simples. Será exibido após o envio."
+    )
+
+    # Botão de envio
+    if st.button("Enviar"):
+        if entrada.strip():  # Verifica se o campo não está vazio
+            st.success("✅ Dados enviados com sucesso!")
+            st.markdown("### Você digitou:")
+            st.code(entrada, language=None)  # Exibe o texto digitado como resposta
+        else:
+            st.warning("⚠️ Por favor, digite algo antes de enviar.")
+
 # ==============================
 # Conteúdo principal: Chat da MSSP
 # ==============================
