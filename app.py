@@ -48,11 +48,10 @@ def ia_mssp_responder(mensagem_usuario="", tem_imagem=False, historico_recente=N
     Conecta à IA real via Hugging Face Inference API (gratuita).
     Responde em português, com personalidade da MSSP.
     """
-    # Substitua YOUR_HF_TOKEN pelo seu token real do Hugging Face
-    HF_TOKEN = "HF_TOKEN = "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"
-"  # ← ALTERE ESTA LINHA!
+    # 🔑 Substitua pelo seu token real do Hugging Face
+    HF_TOKEN = "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"
 
-    if not HF_TOKEN or HF_TOKEN == "YOUR_HF_TOKEN":
+    if not HF_TOKEN or HF_TOKEN == "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":
         return (
             "⚠️ **Chave de API não configurada!**\n\n"
             "Para ativar a IA real:\n"
