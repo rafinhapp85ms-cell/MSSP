@@ -178,9 +178,11 @@ def adicionar_ao_historico(tipo, conteudo, caminho_imagem=None, eh_resposta_ia=F
 # Menu lateral
 # ==============================
 st.sidebar.title("MSSP — Menu")
+
+# Botões de navegação
 pagina = st.sidebar.radio(
     "Navegue pelas seções:",
-    ("Início", "Criador de Apps", "Chat da MSSP", "Configurações"),
+    ("Início", "Criador de Apps", "Chat da MSSP", "Histórico de Conversas", "Histórico de Imagens", "Configurações"),
     index=2
 )
 
@@ -191,6 +193,7 @@ if pagina == "Chat da MSSP":
     st.title("💬 Chat da MSSP")
     st.caption("Converse com a Marie Sophie Souza Pires — sua assistente pessoal para criação de apps.")
 
+    # Campo de texto
     mensagem_usuario = st.text_input(
         label="Sua mensagem:",
         placeholder="Ex: Olá MSSP! Quero criar um app de tarefas.",
@@ -201,15 +204,29 @@ if pagina == "Chat da MSSP":
     with col1:
         btn_enviar = st.button("📤 Enviar")
 
+    # Exibir resposta imediatamente abaixo da pergunta
     if btn_enviar and mensagem_usuario.strip():
+        # Salvar mensagem do usuário
         adicionar_ao_historico("usuario_texto", mensagem_usuario)
-        resposta = ia_mssp_responder(
-            mensagem_usuario=mensagem_usuario,
-            historico_recente=st.session_state.historico
-        )
+        
+        # Gerar resposta da IA
+        with st.spinner("🧠 A MSSP está pensando..."):
+            resposta = ia_mssp_responder(
+                mensagem_usuario=mensagem_usuario,
+                historico_recente=st.session_state.historico
+            )
         adicionar_ao_historico("ia_resposta", resposta, eh_resposta_ia=True)
+        
+        # Mostrar pergunta e resposta na tela
+        st.markdown("---")
+        st.subheader("Sua mensagem:")
+        st.code(mensagem_usuario, language=None)
+        st.subheader("Resposta da MSSP:")
+        st.info(resposta)
+        
         st.rerun()
 
+    # Upload de imagem
     st.markdown("---")
     st.subheader("Ou envie uma imagem")
 
@@ -225,13 +242,26 @@ if pagina == "Chat da MSSP":
         with open(caminho_imagem, "wb") as f:
             f.write(uploaded_file.getbuffer())
         adicionar_ao_historico("usuario_imagem", "Imagem enviada pelo usuário", caminho_imagem)
-        resposta = ia_mssp_responder(tem_imagem=True)
+        
+        # Gerar resposta da IA
+        with st.spinner("🧠 Analisando imagem..."):
+            resposta = ia_mssp_responder(tem_imagem=True)
         adicionar_ao_historico("ia_resposta", resposta, eh_resposta_ia=True)
-        st.success("✅ Imagem recebida! A MSSP respondeu abaixo.")
+        
+        # Mostrar imagem e resposta
+        st.success("✅ Imagem recebida!")
+        st.image(str(caminho_imagem), caption="Imagem recebida", use_column_width=True)
+        st.subheader("Resposta da MSSP:")
+        st.info(resposta)
+        
         st.rerun()
 
-    st.markdown("---")
-    st.subheader("📜 Histórico da Conversa")
+# ==============================
+# Histórico de Conversas
+# ==============================
+elif pagina == "Histórico de Conversas":
+    st.title("📜 Histórico de Conversas")
+    st.caption("Veja todas as mensagens trocadas com a MSSP.")
 
     if st.session_state.historico:
         historico_ordenado = sorted(
@@ -244,18 +274,43 @@ if pagina == "Chat da MSSP":
             if item["tipo"] == "usuario_texto":
                 st.markdown(f"**👤 Você** • {data_fmt}")
                 st.code(item["conteudo"], language=None)
-            elif item["tipo"] == "usuario_imagem":
-                st.markdown(f"**🖼️ Você (imagem)** • {data_fmt}")
-                if item["caminho_imagem"] and os.path.exists(item["caminho_imagem"]):
-                    st.image(item["caminho_imagem"], use_column_width=True)
-                else:
-                    st.text("[Imagem não disponível]")
             elif item["tipo"] == "ia_resposta":
                 st.markdown(f"**🤖 MSSP** • {data_fmt}")
                 st.info(item["conteudo"])
             st.markdown("---")
     else:
-        st.info("Nenhuma conversa ainda. Envie uma mensagem ou imagem para começar!")
+        st.info("Nenhuma conversa ainda. Envie uma mensagem no Chat da MSSP para começar!")
+
+# ==============================
+# Histórico de Imagens
+# ==============================
+elif pagina == "Histórico de Imagens":
+    st.title("🖼️ Histórico de Imagens")
+    st.caption("Veja todas as imagens enviadas e suas respostas associadas.")
+
+    if st.session_state.historico:
+        historico_ordenado = sorted(
+            st.session_state.historico,
+            key=lambda x: x["data_hora"],
+            reverse=True
+        )
+        for item in historico_ordenado:
+            data_fmt = datetime.fromisoformat(item["data_hora"]).strftime("%d/%m/%Y %H:%M:%S")
+            if item["tipo"] == "usuario_imagem":
+                st.markdown(f"**🖼️ Você (imagem)** • {data_fmt}")
+                if item["caminho_imagem"] and os.path.exists(item["caminho_imagem"]):
+                    st.image(item["caminho_imagem"], use_column_width=True)
+                else:
+                    st.text("[Imagem não disponível]")
+                # Mostrar resposta da IA associada
+                if len(st.session_state.historico) > st.session_state.historico.index(item) + 1:
+                    proximo_item = st.session_state.historico[st.session_state.historico.index(item) + 1]
+                    if proximo_item["tipo"] == "ia_resposta":
+                        st.markdown(f"**🤖 MSSP (resposta)** • {proximo_item['data_hora']}")
+                        st.info(proximo_item["conteudo"])
+            st.markdown("---")
+    else:
+        st.info("Nenhuma imagem enviada ainda. Envie uma no Chat da MSSP para começar!")
 
 # ==============================
 # Outras páginas
