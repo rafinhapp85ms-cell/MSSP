@@ -64,12 +64,21 @@ elif pagina == "Criador de Apps":
         help="Este campo coleta um texto simples. Será exibido após o envio."
     )
 
+    # Campo de seleção (dropdown)
+    tipo_app = st.selectbox(
+        label="Escolha o tipo de app:",
+        options=["App Simples", "App com Gráficos", "App com IA"],
+        help="Selecione o tipo de aplicativo que deseja criar."
+    )
+
     # Botão de envio
     if st.button("Enviar"):
         if entrada.strip():  # Verifica se o campo não está vazio
             st.success("✅ Dados enviados com sucesso!")
             st.markdown("### Você digitou:")
-            st.code(entrada, language=None)  # Exibe o texto digitado como resposta
+            st.code(entrada, language=None)  # Exibe o texto digitado
+            st.markdown("### Tipo de app selecionado:")
+            st.code(tipo_app, language=None)  # Exibe o tipo de app selecionado
         else:
             st.warning("⚠️ Por favor, digite algo antes de enviar.")
 
@@ -87,6 +96,38 @@ elif pagina == "Chat da MSSP":
 
     Por enquanto, esta é apenas uma estrutura — nenhuma IA conectada ainda.
     """)
+
+    # ==============================
+    # 🖼️ UPLOAD DE IMAGENS (ETAPA 5)
+    # ==============================
+    st.markdown("---")  # Linha divisória
+    st.subheader("🖼️ Envie uma imagem para análise")
+
+    # Campo de upload de imagem
+    uploaded_file = st.file_uploader(
+        label="Escolha uma imagem (jpg, png, jpeg):",
+        type=["jpg", "png", "jpeg"],
+        help="Faça upload de uma imagem para que a IA possa analisá-la. Apenas formatos JPG, PNG e JPEG são suportados."
+    )
+
+    # Se uma imagem for enviada, mostrar na tela
+    if uploaded_file is not None:
+        st.image(uploaded_file, caption="Imagem recebida", use_column_width=True)
+        st.success("✅ Imagem carregada com sucesso!")
+
+        # Placeholder para futura análise de IA
+        st.info("""
+        🔍 **Análise da imagem (futuro):**
+        
+        Nesta etapa, a IA ainda não está conectada — mas a estrutura já está pronta!
+        
+        Futuramente, você poderá:
+        - Analisar o conteúdo da imagem
+        - Responder perguntas sobre ela
+        - Conectar isso ao chat principal
+        
+        Por enquanto, a imagem é apenas exibida na tela.
+        """)
 
 # ==============================
 # Conteúdo principal: Configurações
