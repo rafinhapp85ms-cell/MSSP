@@ -134,23 +134,31 @@ if pagina == "Chat da MSSP":
     st.title("💬 Chat da MSSP")
     st.caption("Converse com a Marie Sophie Souza Pires — sua assistente pessoal para criação de apps.")
 
-    # Exibir últimas mensagens (opcional, leve)
+    # Exibir histórico de conversas (como no ChatGPT)
     if st.session_state.historico:
-        st.subheader("Últimas mensagens:")
+        st.subheader("Conversas salvas:")
         historico_ordenado = sorted(
             st.session_state.historico,
             key=lambda x: x["data_hora"],
             reverse=True
-        )[:5]
+        )
         for item in historico_ordenado:
             data_fmt = datetime.fromisoformat(item["data_hora"]).strftime("%d/%m %H:%M")
             if item["tipo"] == "usuario_texto":
-                st.markdown(f"**👤 Você** • {data_fmt}")
-                st.code(item["conteudo"], language=None)
+                # Usar o conteúdo como título
+                titulo = item["conteudo"][:50] + "..." if len(item["conteudo"]) > 50 else item["conteudo"]
+                col1, col2 = st.columns([9, 1])
+                with col1:
+                    st.markdown(f"**👤 {titulo}** • {data_fmt}")
+                with col2:
+                    if st.button("🗑️", key=f"del_{item['id']}"):
+                        st.session_state.historico.remove(item)
+                        salvar_historico(st.session_state.historico)
+                        st.rerun()
             elif item["tipo"] == "ia_resposta":
                 st.markdown(f"**🤖 MSSP** • {data_fmt}")
                 st.info(item["conteudo"])
-        st.markdown("---")
+            st.markdown("---")
 
     # Caixa de texto
     mensagem_usuario = st.text_input(
@@ -171,7 +179,7 @@ if pagina == "Chat da MSSP":
         st.markdown("---")
         st.subheader("Selecione o tipo de arquivo:")
 
-        # Opções de mídia
+        # Opções de mídia — sem textos em inglês
         col_img, col_vid, col_aud = st.columns(3)
         with col_img:
             uploaded_image = st.file_uploader("Imagem", type=["jpg", "png", "jpeg"], label_visibility="collapsed")
