@@ -93,7 +93,6 @@ def ia_mssp_responder(mensagem_usuario="", historico_recente=None):
             "Como posso te ajudar agora? 😊"
         )
 
-    # Resposta genérica — mas com contexto
     if "tarefa" in msg_lower or "lista" in msg_lower:
         return (
             "📝 Você quer criar um app de tarefas? Vamos lá!\n\n"
@@ -144,6 +143,24 @@ def adicionar_ao_historico(tipo, conteudo, eh_resposta_ia=False):
     salvar_historico(st.session_state.historico)
 
 # ==============================
+# Estilo CSS para fixar caixa no topo
+# ==============================
+st.markdown("""
+<style>
+/* Fixar container do input no topo */
+.fixed-input-container {
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 100;
+    padding: 1rem 0;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ==============================
 # Menu lateral
 # ==============================
 st.sidebar.title("MSSP — Menu")
@@ -160,20 +177,19 @@ if pagina == "Chat da MSSP":
     st.title("💬 Chat da MSSP")
     st.caption("Converse com a Marie Sophie Souza Pires — sua assistente pessoal para criação de apps.")
 
-    # Área rolável para o chat
-    chat_container = st.container()
-
-    # Caixa de entrada fixa na parte inferior
-    with st.container():
-        col1, col2 = st.columns([9, 1])
-        with col1:
-            mensagem_usuario = st.text_input(
-                label="Sua mensagem:",
-                placeholder="Digite sua mensagem...",
-                label_visibility="collapsed"
-            )
-        with col2:
-            btn_enviar = st.button("📤 Enviar", use_container_width=True)
+    # Caixa de entrada fixa no topo
+    st.markdown('<div class="fixed-input-container">', unsafe_allow_html=True)
+    col1, col2 = st.columns([9, 1])
+    with col1:
+        mensagem_usuario = st.text_input(
+            label="Sua mensagem:",
+            placeholder="Digite sua mensagem...",
+            label_visibility="collapsed",
+            key="input_fixo"
+        )
+    with col2:
+        btn_enviar = st.button("📤 Enviar", use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # Processar envio de texto
     if btn_enviar and mensagem_usuario.strip():
@@ -183,30 +199,31 @@ if pagina == "Chat da MSSP":
         adicionar_ao_historico("ia_resposta", resposta, eh_resposta_ia=True)
         st.rerun()
 
-    # Exibir histórico de conversas (como no ChatGPT)
-    with chat_container:
-        if st.session_state.historico:
-            historico_ordenado = sorted(
-                st.session_state.historico,
-                key=lambda x: x["data_hora"],
-                reverse=True
-            )
-            for item in historico_ordenado:
-                data_fmt = datetime.fromisoformat(item["data_hora"]).strftime("%d/%m %H:%M")
-                if item["tipo"] == "usuario_texto":
-                    titulo = item["conteudo"][:50] + "..." if len(item["conteudo"]) > 50 else item["conteudo"]
-                    col1, col2 = st.columns([9, 1])
-                    with col1:
-                        st.markdown(f"**👤 {titulo}** • {data_fmt}")
-                    with col2:
-                        if st.button("🗑️", key=f"del_{item['id']}"):
-                            st.session_state.historico.remove(item)
-                            salvar_historico(st.session_state.historico)
-                            st.rerun()
-                elif item["tipo"] == "ia_resposta":
-                    st.markdown(f"**🤖 MSSP** • {data_fmt}")
-                    st.info(item["conteudo"])
-                st.markdown("---")
+    # Área do histórico (rola para baixo)
+    if st.session_state.historico:
+        historico_ordenado = sorted(
+            st.session_state.historico,
+            key=lambda x: x["data_hora"],
+            reverse=True
+        )
+        for item in historico_ordenado:
+            data_fmt = datetime.fromisoformat(item["data_hora"]).strftime("%d/%m %H:%M")
+            if item["tipo"] == "usuario_texto":
+                titulo = item["conteudo"][:50] + "..." if len(item["conteudo"]) > 50 else item["conteudo"]
+                col1, col2 = st.columns([9, 1])
+                with col1:
+                    st.markdown(f"**👤 {titulo}** • {data_fmt}")
+                with col2:
+                    if st.button("🗑️", key=f"del_{item['id']}"):
+                        st.session_state.historico.remove(item)
+                        salvar_historico(st.session_state.historico)
+                        st.rerun()
+            elif item["tipo"] == "ia_resposta":
+                st.markdown(f"**🤖 MSSP** • {data_fmt}")
+                st.info(item["conteudo"])
+            st.markdown("---")
+    else:
+        st.info("Nenhuma conversa ainda. Envie uma mensagem para começar!")
 
 # ==============================
 # Histórico de Conversas
