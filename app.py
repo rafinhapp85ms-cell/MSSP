@@ -17,13 +17,6 @@ st.set_page_config(
 # Diretórios e arquivos de histórico
 # ==============================
 HISTORICO_ARQUIVO = "historico.json"
-IMAGENS_DIR = Path("/tmp/mssp_imagens")
-VIDEOS_DIR = Path("/tmp/mssp_videos")
-AUDIOS_DIR = Path("/tmp/mssp_audios")
-
-IMAGENS_DIR.mkdir(exist_ok=True)
-VIDEOS_DIR.mkdir(exist_ok=True)
-AUDIOS_DIR.mkdir(exist_ok=True)
 
 # ==============================
 # Função para carregar histórico
@@ -47,7 +40,7 @@ def salvar_historico(historico):
 # ==============================
 # 🧠 IA SIMULADA — MSSP
 # ==============================
-def ia_mssp_responder(mensagem_usuario="", tem_imagem=False, tem_video=False, tem_audio=False, historico_recente=None):
+def ia_mssp_responder(mensagem_usuario="", historico_recente=None):
     msg_lower = mensagem_usuario.strip().lower()
 
     if not msg_lower:
@@ -55,10 +48,9 @@ def ia_mssp_responder(mensagem_usuario="", tem_imagem=False, tem_video=False, te
             "👋 Olá! Sou a **MSSP** (Marie Sophie Souza Pires), sua assistente pessoal para criação de apps.\n\n"
             "Posso te ajudar com:\n"
             "- Criar apps simples e editáveis\n"
-            "- Receber e armazenar imagens, vídeos e áudios\n"
             "- Manter todo o histórico da nossa conversa\n"
             "- Guiar passo a passo cada implementação\n\n"
-            "Digite algo ou envie uma mídia para começarmos!"
+            "Digite algo para começarmos!"
         )
 
     if any(palavra in msg_lower for palavra in ["oi", "olá", "ola", "eai", "salve"]):
@@ -67,7 +59,6 @@ def ia_mssp_responder(mensagem_usuario="", tem_imagem=False, tem_video=False, te
             "Fico feliz em te ver! Como posso te ajudar hoje?\n\n"
             "Você pode:\n"
             "- Pedir ajuda para criar um app\n"
-            "- Enviar uma imagem, vídeo ou áudio\n"
             "- Perguntar sobre o histórico salvo\n\n"
             "Estou aqui para construir junto com você! 💙"
         )
@@ -82,17 +73,53 @@ def ia_mssp_responder(mensagem_usuario="", tem_imagem=False, tem_video=False, te
             "Com essas informações, posso te guiar passo a passo com código editável no GitHub."
         )
 
-    if tem_imagem or tem_video or tem_audio:
+    if any(palavra in msg_lower for palavra in ["histórico", "conversa", "salvo", "mensagem", "anterior"]):
         return (
-            "✅ Mídia recebida! \n\n"
-            "Por enquanto, estou apenas armazenando-a no histórico. "
-            "No futuro, poderei analisá-la e responder perguntas sobre ela.\n\n"
-            "Como posso te ajudar agora?"
+            "📁 Seu histórico está sendo salvo automaticamente!\n\n"
+            "- Mensagens ficam em `st.session_state`\n"
+            "- Tudo é persistido em `historico.json`\n\n"
+            "Isso garante que, mesmo após atualizar a página, você não perde nada (durante a sessão ativa).\n\n"
+            "Quer que eu mostre algo específico do histórico?"
+        )
+
+    if any(palavra in msg_lower for palavra in ["quem é você", "o que você faz", "qual sua função", "sua identidade"]):
+        return (
+            "🧠 Sou a **MSSP** (Marie Sophie Souza Pires) — sua assistente pessoal para criação de apps.\n\n"
+            "Minha função é:\n"
+            "- Ajudar você a criar aplicativos simples, seguros e totalmente editáveis\n"
+            "- Manter todo o histórico da nossa conversa\n"
+            "- Preparar a estrutura para integrar IA avançada quando você quiser\n\n"
+            "No momento, minhas respostas são simuladas, mas minha estrutura já está pronta para evoluir.\n\n"
+            "Como posso te ajudar agora? 😊"
+        )
+
+    # Resposta genérica — mas com contexto
+    if "tarefa" in msg_lower or "lista" in msg_lower:
+        return (
+            "📝 Você quer criar um app de tarefas? Vamos lá!\n\n"
+            "Passo 1: Crie um campo de texto para digitar a tarefa.\n"
+            "Passo 2: Adicione um botão 'Adicionar'.\n"
+            "Passo 3: Mostre a lista de tarefas abaixo.\n\n"
+            "Quer que eu te mostre o código completo para isso?"
+        )
+
+    if "gráfico" in msg_lower or "gráfico" in msg_lower:
+        return (
+            "📊 Quer adicionar um gráfico? Ótima escolha!\n\n"
+            "Você pode usar `st.line_chart()`, `st.bar_chart()` ou `plotly`.\n\n"
+            "Exemplo básico:\n"
+            "```python\n"
+            "import streamlit as st\n"
+            "dados = [1, 2, 3, 4, 5]\n"
+            "st.line_chart(dados)\n"
+            "```\n\n"
+            "Quer que eu adapte isso ao seu app?"
         )
 
     return (
         "Entendi! Sou a **MSSP** (Marie Sophie Souza Pires) 👋\n\n"
-        "Minha função é te ajudar a criar e gerenciar aplicativos de forma simples e totalmente editável.\n\n"
+        "Minha função é te ajudar a criar e gerenciar aplicativos de forma simples, segura e totalmente editável.\n\n"
+        "No momento, minhas respostas são simuladas, mas minha estrutura já está pronta para integrar IA avançada (visão, áudio, APIs) quando você quiser.\n\n"
         "Como posso te ajudar agora? 😊"
     )
 
@@ -105,13 +132,12 @@ if "historico" not in st.session_state:
 # ==============================
 # Função para adicionar item ao histórico
 # ==============================
-def adicionar_ao_historico(tipo, conteudo, caminho_midia=None, eh_resposta_ia=False):
+def adicionar_ao_historico(tipo, conteudo, eh_resposta_ia=False):
     item = {
         "id": datetime.now().strftime("%Y%m%d_%H%M%S_%f"),
         "data_hora": datetime.now().isoformat(),
         "tipo": tipo,
         "conteudo": conteudo,
-        "caminho_midia": str(caminho_midia) if caminho_midia else None,
         "eh_resposta_ia": eh_resposta_ia
     }
     st.session_state.historico.append(item)
@@ -134,106 +160,20 @@ if pagina == "Chat da MSSP":
     st.title("💬 Chat da MSSP")
     st.caption("Converse com a Marie Sophie Souza Pires — sua assistente pessoal para criação de apps.")
 
-    # Exibir histórico de conversas (como no ChatGPT)
-    if st.session_state.historico:
-        st.subheader("Conversas salvas:")
-        historico_ordenado = sorted(
-            st.session_state.historico,
-            key=lambda x: x["data_hora"],
-            reverse=True
-        )
-        for item in historico_ordenado:
-            data_fmt = datetime.fromisoformat(item["data_hora"]).strftime("%d/%m %H:%M")
-            if item["tipo"] == "usuario_texto":
-                # Usar o conteúdo como título
-                titulo = item["conteudo"][:50] + "..." if len(item["conteudo"]) > 50 else item["conteudo"]
-                col1, col2 = st.columns([9, 1])
-                with col1:
-                    st.markdown(f"**👤 {titulo}** • {data_fmt}")
-                with col2:
-                    if st.button("🗑️", key=f"del_{item['id']}"):
-                        st.session_state.historico.remove(item)
-                        salvar_historico(st.session_state.historico)
-                        st.rerun()
-            elif item["tipo"] == "ia_resposta":
-                st.markdown(f"**🤖 MSSP** • {data_fmt}")
-                st.info(item["conteudo"])
-            st.markdown("---")
+    # Área rolável para o chat
+    chat_container = st.container()
 
-    # Caixa de texto
-    mensagem_usuario = st.text_input(
-        label="Sua mensagem:",
-        placeholder="Digite sua mensagem...",
-        label_visibility="collapsed"
-    )
-
-    # Botões: Enviar + Anexar
-    col1, col2 = st.columns(2)
-    with col1:
-        btn_enviar = st.button("📤 Enviar", use_container_width=True)
-    with col2:
-        btn_anexar = st.button("📎 Anexar", use_container_width=True)
-
-    # Menu de anexos (só aparece ao clicar em "Anexar")
-    if btn_anexar:
-        st.markdown("---")
-        st.subheader("Selecione o tipo de arquivo:")
-
-        # Opções de mídia — sem textos em inglês
-        col_img, col_vid, col_aud = st.columns(3)
-        with col_img:
-            uploaded_image = st.file_uploader("Imagem", type=["jpg", "png", "jpeg"], label_visibility="collapsed")
-            if uploaded_image is not None:
-                ext = uploaded_image.name.split(".")[-1].lower()
-                nome = f"img_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
-                caminho = IMAGENS_DIR / nome
-                with open(caminho, "wb") as f:
-                    f.write(uploaded_image.getbuffer())
-                adicionar_ao_historico("usuario_imagem", "Imagem enviada", caminho)
-                with st.spinner("🧠 Analisando imagem..."):
-                    resposta = ia_mssp_responder(tem_imagem=True)
-                adicionar_ao_historico("ia_resposta", resposta, eh_resposta_ia=True)
-                st.success("✅ Imagem recebida!")
-                st.image(str(caminho), use_column_width=True)
-                st.subheader("Resposta da MSSP:")
-                st.info(resposta)
-                st.rerun()
-
-        with col_vid:
-            uploaded_video = st.file_uploader("Vídeo", type=["mp4", "avi", "mov"], label_visibility="collapsed")
-            if uploaded_video is not None:
-                ext = uploaded_video.name.split(".")[-1].lower()
-                nome = f"video_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
-                caminho = VIDEOS_DIR / nome
-                with open(caminho, "wb") as f:
-                    f.write(uploaded_video.getbuffer())
-                adicionar_ao_historico("usuario_video", "Vídeo enviado", caminho)
-                with st.spinner("🧠 Analisando vídeo..."):
-                    resposta = ia_mssp_responder(tem_video=True)
-                adicionar_ao_historico("ia_resposta", resposta, eh_resposta_ia=True)
-                st.success("✅ Vídeo recebido!")
-                st.video(str(caminho))
-                st.subheader("Resposta da MSSP:")
-                st.info(resposta)
-                st.rerun()
-
-        with col_aud:
-            uploaded_audio = st.file_uploader("Áudio", type=["mp3", "wav", "ogg"], label_visibility="collapsed")
-            if uploaded_audio is not None:
-                ext = uploaded_audio.name.split(".")[-1].lower()
-                nome = f"audio_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
-                caminho = AUDIOS_DIR / nome
-                with open(caminho, "wb") as f:
-                    f.write(uploaded_audio.getbuffer())
-                adicionar_ao_historico("usuario_audio", "Áudio enviado", caminho)
-                with st.spinner("🧠 Analisando áudio..."):
-                    resposta = ia_mssp_responder(tem_audio=True)
-                adicionar_ao_historico("ia_resposta", resposta, eh_resposta_ia=True)
-                st.success("✅ Áudio recebido!")
-                st.audio(str(caminho))
-                st.subheader("Resposta da MSSP:")
-                st.info(resposta)
-                st.rerun()
+    # Caixa de entrada fixa na parte inferior
+    with st.container():
+        col1, col2 = st.columns([9, 1])
+        with col1:
+            mensagem_usuario = st.text_input(
+                label="Sua mensagem:",
+                placeholder="Digite sua mensagem...",
+                label_visibility="collapsed"
+            )
+        with col2:
+            btn_enviar = st.button("📤 Enviar", use_container_width=True)
 
     # Processar envio de texto
     if btn_enviar and mensagem_usuario.strip():
@@ -241,12 +181,32 @@ if pagina == "Chat da MSSP":
         with st.spinner("🧠 A MSSP está pensando..."):
             resposta = ia_mssp_responder(mensagem_usuario=mensagem_usuario)
         adicionar_ao_historico("ia_resposta", resposta, eh_resposta_ia=True)
-        st.markdown("---")
-        st.subheader("Sua mensagem:")
-        st.code(mensagem_usuario, language=None)
-        st.subheader("Resposta da MSSP:")
-        st.info(resposta)
         st.rerun()
+
+    # Exibir histórico de conversas (como no ChatGPT)
+    with chat_container:
+        if st.session_state.historico:
+            historico_ordenado = sorted(
+                st.session_state.historico,
+                key=lambda x: x["data_hora"],
+                reverse=True
+            )
+            for item in historico_ordenado:
+                data_fmt = datetime.fromisoformat(item["data_hora"]).strftime("%d/%m %H:%M")
+                if item["tipo"] == "usuario_texto":
+                    titulo = item["conteudo"][:50] + "..." if len(item["conteudo"]) > 50 else item["conteudo"]
+                    col1, col2 = st.columns([9, 1])
+                    with col1:
+                        st.markdown(f"**👤 {titulo}** • {data_fmt}")
+                    with col2:
+                        if st.button("🗑️", key=f"del_{item['id']}"):
+                            st.session_state.historico.remove(item)
+                            salvar_historico(st.session_state.historico)
+                            st.rerun()
+                elif item["tipo"] == "ia_resposta":
+                    st.markdown(f"**🤖 MSSP** • {data_fmt}")
+                    st.info(item["conteudo"])
+                st.markdown("---")
 
 # ==============================
 # Histórico de Conversas
@@ -271,18 +231,7 @@ elif pagina == "Histórico de Conversas":
 # ==============================
 elif pagina == "Histórico de Imagens":
     st.title("🖼️ Histórico de Imagens")
-    if st.session_state.historico:
-        for item in sorted(st.session_state.historico, key=lambda x: x["data_hora"], reverse=True):
-            if item["tipo"] == "usuario_imagem":
-                data = datetime.fromisoformat(item["data_hora"]).strftime("%d/%m %H:%M")
-                st.markdown(f"**🖼️ Você (imagem)** • {data}")
-                if item["caminho_midia"] and os.path.exists(item["caminho_midia"]):
-                    st.image(item["caminho_midia"], use_column_width=True)
-                else:
-                    st.text("[Imagem não disponível]")
-                st.markdown("---")
-    else:
-        st.info("Nenhuma imagem enviada ainda.")
+    st.info("Nenhuma imagem enviada ainda. Envie uma no Chat da MSSP para começar!")
 
 # ==============================
 # Outras páginas
