@@ -17,6 +17,7 @@ st.set_page_config(
 # Diretórios e arquivos de histórico
 # ==============================
 HISTORICO_ARQUIVO = "historico.json"
+AGENDAMENTOS_ARQUIVO = "agendamentos.json"
 
 # ==============================
 # Função para carregar histórico
@@ -36,6 +37,25 @@ def carregar_historico():
 def salvar_historico(historico):
     with open(HISTORICO_ARQUIVO, "w", encoding="utf-8") as f:
         json.dump(historico, f, ensure_ascii=False, indent=2)
+
+# ==============================
+# Função para carregar agendamentos
+# ==============================
+def carregar_agendamentos():
+    if os.path.exists(AGENDAMENTOS_ARQUIVO):
+        try:
+            with open(AGENDAMENTOS_ARQUIVO, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return []
+    return []
+
+# ==============================
+# Função para salvar agendamentos
+# ==============================
+def salvar_agendamentos(agendamentos):
+    with open(AGENDAMENTOS_ARQUIVO, "w", encoding="utf-8") as f:
+        json.dump(agendamentos, f, ensure_ascii=False, indent=2)
 
 # ==============================
 # 🧠 IA MSSP - Consultora técnica sênior
@@ -183,7 +203,7 @@ st.markdown("""
 st.sidebar.title("MSSP — Menu")
 pagina = st.sidebar.radio(
     "Navegue pelas seções:",
-    ("Início", "Criador de Apps", "Chat da MSSP", "Histórico de Conversas", "Histórico de Imagens", "Configurações"),
+    ("Início", "Criador de Apps", "Chat da MSSP", "Agendador de Postagens", "Histórico de Conversas", "Histórico de Imagens", "Configurações"),
     index=2
 )
 
@@ -247,6 +267,78 @@ if pagina == "Chat da MSSP":
             st.markdown("---")
     else:
         st.info("Nenhuma conversa ainda. Envie uma mensagem para começar!")
+
+# ==============================
+# Agendador de Postagens
+# ==============================
+elif pagina == "Agendador de Postagens":
+    st.title("📅 Agendador de Postagens")
+    st.caption("Simule o agendamento de postagens em redes sociais e blog.")
+
+    # Carregar agendamentos existentes
+    agendamentos = carregar_agendamentos()
+
+    # Formulário de agendamento
+    st.subheader("Novo Agendamento")
+
+    plataforma = st.selectbox(
+        "Plataforma:",
+        ["Instagram", "TikTok", "Facebook", "Shopify Blog"]
+    )
+
+    tipo_conteudo = st.text_input(
+        "Tipo de conteúdo:",
+        placeholder="Ex: produto, oferta, dica, vídeo curto"
+    )
+
+    # Horários padrão
+    horarios_padrao = ["09:00", "15:00", "21:00"]
+    horarios_escolhidos = st.multiselect(
+        "Horários de postagem (selecione até 3):",
+        options=["06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00",
+                 "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00",
+                 "20:00", "21:00", "22:00", "23:00"],
+        default=horarios_padrao
+    )
+
+    if st.button("💾 Salvar Agendamento"):
+        if not tipo_conteudo.strip():
+            st.warning("⚠️ Por favor, preencha o tipo de conteúdo.")
+        elif len(horarios_escolhidos) == 0:
+            st.warning("⚠️ Selecione pelo menos um horário.")
+        else:
+            novo_agendamento = {
+                "id": datetime.now().strftime("%Y%m%d_%H%M%S_%f"),
+                "data_criacao": datetime.now().isoformat(),
+                "plataforma": plataforma,
+                "tipo_conteudo": tipo_conteudo.strip(),
+                "horarios": sorted(horarios_escolhidos)
+            }
+            agendamentos.append(novo_agendamento)
+            salvar_agendamentos(agendamentos)
+            st.success("✅ Agendamento salvo com sucesso!")
+            st.rerun()
+
+    # Mostrar agendamentos salvos
+    st.markdown("---")
+    st.subheader("Agendamentos Salvos")
+
+    if agendamentos:
+        agendamentos_ordenados = sorted(agendamentos, key=lambda x: x["data_criacao"], reverse=True)
+        for ag in agendamentos_ordenados:
+            data_fmt = datetime.fromisoformat(ag["data_criacao"]).strftime("%d/%m/%Y %H:%M")
+            st.markdown(f"**{ag['plataforma']}** • {data_fmt}")
+            st.write(f"**Conteúdo:** {ag['tipo_conteudo']}")
+            st.write(f"**Horários:** {', '.join(ag['horarios'])}")
+            st.markdown("---")
+    else:
+        st.info("Nenhum agendamento salvo ainda.")
+
+    # Aviso importante
+    st.info(
+        "ℹ️ Este agendamento é lógico. A execução automática depende de um servidor ativo 24/7. "
+        "No Streamlit Cloud gratuito, o app dorme após inatividade, então não é possível executar postagens reais automaticamente."
+    )
 
 # ==============================
 # Histórico de Conversas
