@@ -58,49 +58,49 @@ def ia_mssp_responder(mensagem_usuario="", historico_recente=None):
     if any(palavra in msg_lower for palavra in ["whatsapp", "zap", "mensagem", "contato"]):
         return (
             "✅ **Resposta direta ao problema**\n\n"
-            "Você pode integrar seu app MSSP ao WhatsApp com um link direto — simples, legal e gratuito.\n\n"
+            "Seu link direto para WhatsApp já está configurado no app.\n\n"
             
             "🔍 **Explicação prática e objetiva**\n\n"
-            "O WhatsApp não permite integração profunda com apps externos sem API oficial (paga e complexa). "
-            "Mas você pode criar um botão que abre uma conversa pré-definida no WhatsApp do seu cliente — "
-            "usando um link público do tipo `https://wa.me/...`.\n\n"
+            "Qualquer pessoa que clicar no botão '💬 Falar comigo no WhatsApp' será redirecionada para uma conversa com você no número +351927245410, com a mensagem pré-definida: 'Olá! Vim do app MSSP'.\n\n"
             
             "🛠️ **Passo a passo do que fazer agora**\n\n"
-            "1. Pegue seu número de WhatsApp no formato internacional (ex: +351912345678)\n"
-            "2. Use este modelo de link: `https://wa.me/351912345678?text=Olá! Vim do app MSSP`\n"
-            "3. No seu `app.py`, adicione este código no final da página 'Chat da MSSP':\n\n"
-            "```python\n"
-            "st.markdown('[💬 Falar comigo no WhatsApp](https://wa.me/SEUNUMERO?text=Olá! Vim do app MSSP)', unsafe_allow_html=True)\n"
-            "```\n"
-            "4. Substitua `SEUNUMERO` pelo seu número sem o sinal de + (ex: 351912345678)\n\n"
+            "1. Nada — já está funcionando!\n"
+            "2. Teste clicando no botão abaixo do chat\n"
+            "3. Responda rapidamente aos leads para aumentar conversões\n\n"
             
             "🚫 **O que NÃO fazer**\n\n"
-            "- Não tente usar bibliotecas como `pywhatkit` ou `selenium` — não funcionam no Streamlit Cloud\n"
-            "- Não use serviços de terceiros que prometem 'conexão grátis com WhatsApp' — são golpes ou violam os termos\n"
-            "- Não espere receber mensagens automáticas no app — só envio é possível\n\n"
+            "- Não mude seu número sem atualizar o link no código\n"
+            "- Não espere mensagens automáticas — só envio é possível\n\n"
             
             "➡️ **Próximo passo recomendado**\n\n"
-            "Me diga seu número de WhatsApp (com código do país) e eu gero o código exato para colar no `app.py`."
+            "Use este canal para fechar vendas, tirar dúvidas ou enviar ofertas exclusivas."
         )
 
-    # Resposta sobre afiliados e ClickBank
-    if any(palavra in msg_lower for palavra in ["afiliado", "afiliação", "clickbank", "hotmart", "monetizze", "plataforma de afiliados"]):
+    # Resposta sobre afiliados e ClickBank/Hotmart
+    if any(palavra in msg_lower for palavra in ["afiliado", "afiliação", "clickbank", "hotmart", "monetizze", "plataforma de afiliados", "europa"]):
         return (
             "✅ **Resposta direta ao problema**\n\n"
-            "Você pode integrar programas de afiliados (ClickBank, Hotmart, Monetizze) ao seu funil de vendas com links de rastreamento e páginas de captura.\n\n"
+            "Você pode integrar estas plataformas de afiliados ao seu funil:\n\n"
+            "- **ClickBank** (internacional)\n"
+            "- **Hotmart** (Brasil/Europa)\n"
+            "- **Digistore24** (Alemanha, forte na Europa)\n"
+            "- **TradeTracker** (Holanda, líder em CPA na Europa)\n"
+            "- **Awin** (Reino Unido, rede global com marcas europeias)\n\n"
             
             "🔍 **Explicação prática e objetiva**\n\n"
-            "- **ClickBank**: plataforma internacional de produtos digitais. Você se cadastra como afiliado, recebe um link único e ganha comissão por venda.\n"
-            "- **Hotmart / Monetizze**: plataformas brasileiras com produtos digitais (cursos, e-books). Funcionam igual: cadastro, link de afiliado, comissão.\n"
-            "- **Integração com Shopify**: você não vende diretamente no Shopify, mas usa a loja para gerar tráfego e redirecionar para a página de vendas do produto afiliado.\n\n"
+            "- **ClickBank**: ideal para produtos digitais (e-books, cursos). Comissões altas (até 75%). Requer aprovação.\n"
+            "- **Hotmart**: fácil de usar, suporte em português, produtos variados. Disponível em Portugal.\n"
+            "- **Digistore24**: foco em cursos e software na Alemanha/Austria. Pagamento em EUR.\n"
+            "- **TradeTracker / Awin**: redes de afiliados com marcas físicas (ex: Zalando, Decathlon). Modelo CPA (custo por ação).\n\n"
             
             "🛠️ **Passo a passo do que fazer agora**\n\n"
-            "1. Escolha um produto relevante ao seu público (ex: curso de dropshipping)\n"
-            "2. Cadastre-se como afiliado na plataforma (ClickBank, Hotmart, etc.)\n"
-            "3. Copie seu link de afiliado\n"
-            "4. Crie uma página no Shopify (ex: `/recomendacoes`) com botão: `Comprar agora`\n"
-            "5. Redirecione esse botão para seu link de afiliado\n"
-            "6. Promova essa página com tráfego pago ou orgânico\n\n"
+            "1. Cadastre-se como afiliado nas plataformas acima\n"
+            "2. Escolha produtos relevantes ao seu público (ex: curso de dropshipping)\n"
+            "3. Copie seus links de afiliado\n"
+            "4. Crie páginas no Shopify (ex: `/recomendacoes`) com botões:\n"
+            "   - [Comprar no ClickBank](seu_link_clickbank)\n"
+            "   - [Garantir na Hotmart](seu_link_hotmart)\n"
+            "5. Promova essas páginas com tráfego pago ou orgânico\n\n"
             
             "🚫 **O que NÃO fazer**\n\n"
             "- Não prometa resultados irreais ('ganhe R$10.000 por semana')\n"
@@ -108,7 +108,7 @@ def ia_mssp_responder(mensagem_usuario="", historico_recente=None):
             "- Não esconda que é um link de afiliado — seja transparente\n\n"
             
             "➡️ **Próximo passo recomendado**\n\n"
-            "Me diga qual plataforma de afiliados você quer usar (ClickBank, Hotmart, etc.) e eu te mostro o código exato para adicionar no Shopify."
+            "Me diga qual produto ou nicho você quer promover, e eu te mostro a plataforma ideal e o código exato para o Shopify."
         )
 
     # Resposta genérica
@@ -207,6 +207,12 @@ if pagina == "Chat da MSSP":
     with col2:
         btn_enviar = st.button("📤 Enviar", use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
+
+    # Botão de WhatsApp fixo abaixo do input
+    st.markdown(
+        '[💬 Falar comigo no WhatsApp](https://wa.me/351927245410?text=Olá!%20Vim%20do%20app%20MSSP)',
+        unsafe_allow_html=True
+    )
 
     # Processar envio de texto
     if btn_enviar and mensagem_usuario.strip():
