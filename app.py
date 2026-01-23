@@ -1,7 +1,7 @@
 import streamlit as st
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 # ==============================
@@ -100,7 +100,7 @@ def usar_credencial(plataforma):
 st.sidebar.title("MSSP — Menu")
 pagina = st.sidebar.radio(
     "Navegue pelas seções:",
-    ("Início", "Criador de Apps", "Chat da MSS P", "Agendador de Postagens", "Credenciais", "Produtos Afiliados (Europa)", "Histórico de Conversas", "Histórico de Imagens", "Configurações"),
+    ("Início", "Criador de Apps", "Chat da MSSP", "Agendador de Postagens", "Credenciais", "Produtos Afiliados (Europa)", "Histórico de Conversas", "Histórico de Imagens", "Configurações"),
     index=1
 )
 
